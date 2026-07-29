@@ -11,7 +11,9 @@ import service.UserDAO;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @WebServlet(name = "UserServlet", urlPatterns = "/users")
 public class UserServlet extends HttpServlet {
@@ -60,6 +62,12 @@ public class UserServlet extends HttpServlet {
                 case "delete":
                     deleteUser(request, response);
                     break;
+                case "find":
+                    findUser(request, response);
+                    break;
+                case "sort":
+                    sortUsersByName(request, response);
+                    break;
                 default:
                     listUser(request, response);
                     break;
@@ -79,7 +87,7 @@ public class UserServlet extends HttpServlet {
 
     private void showNewForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        RequestDispatcher dispatcher = request.getRequestDispatcher("user/create.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("WEB-INF/users/create.jsp");
         dispatcher.forward(request, response);
     }
 
@@ -87,7 +95,7 @@ public class UserServlet extends HttpServlet {
             throws SQLException, ServletException, IOException {
         int id = Integer.parseInt(request.getParameter("id"));
         User existingUser = userDAO.selectUser(id);
-        RequestDispatcher dispatcher = request.getRequestDispatcher("user/edit.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("WEB-INF/users/edit.jsp");
         request.setAttribute("user", existingUser);
         dispatcher.forward(request, response);
 
@@ -100,7 +108,7 @@ public class UserServlet extends HttpServlet {
         String country = request.getParameter("country");
         User newUser = new User(name, email, country);
         userDAO.insertUser(newUser);
-        RequestDispatcher dispatcher = request.getRequestDispatcher("user/create.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("WEB-INF/users/create.jsp");
         dispatcher.forward(request, response);
     }
 
@@ -113,7 +121,7 @@ public class UserServlet extends HttpServlet {
 
         User book = new User(id, name, email, country);
         userDAO.updateUser(book);
-        RequestDispatcher dispatcher = request.getRequestDispatcher("user/edit.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("WEB-INF/users/edit.jsp");
         dispatcher.forward(request, response);
     }
 
@@ -124,7 +132,52 @@ public class UserServlet extends HttpServlet {
 
         List<User> listUser = userDAO.selectAllUsers();
         request.setAttribute("listUser", listUser);
-        RequestDispatcher dispatcher = request.getRequestDispatcher("user/list.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("WEB-INF/users/list.jsp");
+        dispatcher.forward(request, response);
+    }
+
+    private void findUser(HttpServletRequest request, HttpServletResponse response)
+            throws SQLException, IOException, ServletException {
+        String country = request.getParameter("country");
+        UserDAO userDAO = new UserDAO();
+
+        // Lấy Map dữ liệu từ DAO
+        Map<Integer, User> userMap = userDAO.searchUsersByCountry(country);
+
+        // Chuyển Map thành List
+        List<User> listUser = new ArrayList<>(userMap.values());
+
+        if (listUser.isEmpty()) {
+            request.setAttribute("message", "No users found for country: " + country);
+        }
+
+        // Đặt tên attribute trùng với biến listUser trong JSP
+        request.setAttribute("listUser", listUser);
+
+        // Giữ lại từ khóa tìm kiếm trên ô input
+        request.setAttribute("searchCountry", country);
+
+        RequestDispatcher dispatcher = request.getRequestDispatcher("WEB-INF/users/list.jsp");
+        dispatcher.forward(request, response);
+    }
+    private void sortUsersByName(HttpServletRequest request, HttpServletResponse response)
+            throws SQLException, IOException, ServletException {
+
+        UserDAO userDAO = new UserDAO();
+
+
+        Map<Integer, User> userMap = userDAO.selectAllUsersSortedByName();
+
+
+        List<User> listUser = new ArrayList<>(userMap.values());
+
+
+        request.setAttribute("listUser", listUser);
+
+
+        request.setAttribute("isSorted", true);
+
+        RequestDispatcher dispatcher = request.getRequestDispatcher("WEB-INF/users/list.jsp");
         dispatcher.forward(request, response);
     }
 }
