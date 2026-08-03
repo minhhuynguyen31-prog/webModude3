@@ -20,4 +20,13 @@ public interface IUserDAO {
     public Map<Integer, User> searchUsersByCountry(String countryName) throws SQLException;
 
     public Map<Integer, User> selectAllUsersSortedByName() throws SQLException;
+
+    User getUserById(int id);
+
+    void insertUserStore(User user) throws SQLException;
+
+    void addUserTransaction(User user, List<Integer> permission);
+
+    public void insertUpdateWithoutTransaction();
+    public void insertUpdateUseTransaction();
 }
