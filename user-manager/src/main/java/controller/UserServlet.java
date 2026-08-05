@@ -158,10 +158,7 @@ public class UserServlet extends HttpServlet {
         int id = Integer.parseInt(request.getParameter("id"));
         userDAO.deleteUser(id);
 
-        List<User> listUser = userDAO.selectAllUsers();
-        request.setAttribute("listUser", listUser);
-        RequestDispatcher dispatcher = request.getRequestDispatcher("WEB-INF/users/list.jsp");
-        dispatcher.forward(request, response);
+        response.sendRedirect("WEB-INF/users");
     }
 
     private void findUser(HttpServletRequest request, HttpServletResponse response)
@@ -212,6 +209,7 @@ public class UserServlet extends HttpServlet {
 
     private void testWithoutTran(HttpServletRequest request, HttpServletResponse response) {
         userDAO.insertUpdateWithoutTransaction();
+
     }
 
     private void testUseTran(HttpServletRequest request, HttpServletResponse response) {
